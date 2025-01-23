@@ -1,71 +1,101 @@
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
-import promptSync from 'prompt-sync';
-
-const prompt = promptSync();
+import { getStopCode} from './userInput.js';
+import { getUserPostcode } from './userInput.js';
+import { getArrivals } from './clientsTfl.js';
+import { validateUKPostcode } from './userInput.js';
+//import { getPostcode } from './clientsTfl.js';
+//import { getNearBusStop } from './clientsTfl.js';
 
 dotenv.config();
 
 const api_key = process.env.API_KEY;
 
-const getArrivals = async (stopPoint, apiKey) => { 
-  try { 
-    const result = await fetch('https://api.tfl.gov.uk/StopPoint/' + stopPoint + '/Arrivals?app_key=' + apiKey);
-    const json = await result.json();
-    return json;
-    } catch (error) { console.error('Error:', error); } 
-};
-
-// Get bus stop code from user
-const stopCode = prompt('Please enter bus stop code:');
+const stopCode = getStopCode();
 
 const response = await getArrivals(stopCode, api_key);
 console.log(response);
-
 
 // Check number of arriving buses
 const numOfArrBus = response.length;
 
 // Print next 5 (or less if there are less than 5) buses
-//let arrivingBuses = [];
-for (let i = 0; i < 5 && i < numOfArrBus; i++) {
-  //arrivingBuses.push(response[i].lineName);
-  console.log(response[i].lineName);
-}
+/* let arrivingBuses = [{
+  
+}];
+for (let i = 0; i < numOfArrBus; i++) {
+  arrivingBuses.push(response[i].lineId);
+  console.log(response[i].lineId);
+} */
+const StopArrivals = response.map((bus)=>{
+  return{
+    "Bus Number": bus.lineName,
+    "Destination": bus.destinationName,
+    "Time_to_arrival": (bus.timeToStation/60).toFixed(1)
+  }
+});
+// console.log(StopArrivals);
+StopArrivals.sort((a, b) => a.Time_to_arrival - b.Time_to_arrival);
+// console.log(StopArrivals);
+
+const firstFive = StopArrivals.slice(0, 5);
+console.log(firstFive);
+
+/*
+
+        do{
+            try {
+                triangle = getTriangleDim();
+                bError=false;
+                }
+                //([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9][A-Za-z]?))))\s?[0-9][A-Za-z]{2})
+            catch (Exception e){
+                System.out.println("You did not enter an integer, please enter an integer value");
+                triangle = getTriangleDim();
+
+                }
+        }while (bError);
 
 
-const getPostcode = async (url) => {
+
+*/
+
+let beRror = true;
+let userPostcode ;
+do {
   try {
-    const result = await fetch(url);
-    const json = await result.json();
-    return json;
-  } catch (error) { console.error('Error:', error); } 
-}
+    userPostcode = getUserPostcode();
+   
+    if ((validateUKPostcode(userPostcode) == false)) {
+      throw 'Invalid postcode';
+       }
+       beRror = false;
+  } catch (err) {
+   console.log("Invalid postcode - please try again.")
+   
+  }
+} while(beRror)
 
-// Get postcode from user
-const userPostcode = prompt('Please enter the postcode:');
+
 const urlPostcode = 'https://api.postcodes.io/postcodes/' + userPostcode;
 
-const responseGetPostcode = await getPostcode(urlPostcode);
-// console.log(responseGetPostcode);
 
+const responseGetPostcode = await getPostcode(urlPostcode);
+console.log(responseGetPostcode);
+
+/*
 const lon = responseGetPostcode.result.longitude;
 const lat = responseGetPostcode.result.latitude;
 
 // console.log(lon);
 // console.log(lat);
 
-const urlNearBusStop = 'https://api.tfl.gov.uk/StopPoint/?lat=' + lat + '&lon=' + lon + '&stopTypes=NaptanPublicBusCoachTram';
-const getNearBusStop = async () => {
-  try {
-    const result = await fetch(urlNearBusStop);
-    const json = await result.json();
-    return json;
-  } catch (error) { console.error('Error:', error); } 
-}
+
 
 const responseNearBusStop = await getNearBusStop();
 console.log(responseNearBusStop);
 
 //console.log(responseNearBusStop.stopPoints[0].id);
 //console.log(responseNearBusStop.stopPoints[0].commonName);
+*/
+// stopcode 490008660N
