@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 export const getArrivals = async (stopPoint, apiKey) => { 
     try { 
       const result = await fetch(`https://api.tfl.gov.uk/StopPoint/${stopPoint}/Arrivals?app_key=${apiKey}`);
@@ -9,17 +11,16 @@ export const getArrivals = async (stopPoint, apiKey) => {
   
 export const getPostcode = async (url) => {
   try {
-    const result = await fetch(url);
-    const json = await result.json();
-    return json;
+    const Geo_result = await fetch(url);
+    const Geo_json = await Geo_result.json();
+    return Geo_json;
   } catch (error) { console.error('Error:', error); } 
 }
-/*
-export const urlNearBusStop = 'https://api.tfl.gov.uk/StopPoint/?lat=' + lat + '&lon=' + lon + '&stopTypes=NaptanPublicBusCoachTram';
-export const getNearBusStop = async () => {
+
+export const getNearBusStop = async (urlNearBusStop) => {
   try {
-    const result = await fetch(urlNearBusStop);
-    const json = await result.json();
-    return json;
+    const BusStopID_result = await fetch(urlNearBusStop);
+    const BusStopID_json = await BusStopID_result.json();
+    return BusStopID_json;
   } catch (error) { console.error('Error:', error); } 
-}*/
+}
