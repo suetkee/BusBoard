@@ -14,6 +14,13 @@ const api_key = process.env.API_KEY;
 //const stopCode = getStopCode();
 export const getNext5Arrivals = async (stopCode, api_key) =>{
   const response = await getArrivals(stopCode, api_key);
+  try {
+    if (response.length === 0) {
+      throw "No bus arriving at the moment";
+    }
+  } catch (error) {
+    console.log(error);
+  }
 
   const StopArrivals = await response.map((bus)=>{
   return{
@@ -60,20 +67,15 @@ const lat = await responseGetPostcode.result.latitude;
 //console.log(lat);
 
 const urlNearBusStop = `https://api.tfl.gov.uk/StopPoint/?lat=${lat}&lon=${lon}&stopTypes=NaptanPublicBusCoachTram`;
-/*
- try {
-    const BusStopID_result = await fetch(urlNearBusStop);
-    const BusStopID_json = await BusStopID_result.json();
-    return BusStopID_json;
-  } catch (error) { console.error('Error:', error); } 
 
-
-*/
-
-
-try {
 const responseNearBusStop = await getNearBusStop(urlNearBusStop);
-if (responseNearBusStop.stopPoints.length > 0) {
+try{
+if (responseNearBusStop.stopPoints.length === 0) {
+    throw "No bus stops nearby";
+}
+} catch(error){
+  console.log(error);
+}
 //console.log(responseNearBusStop);
 const nearTwoBusStops = responseNearBusStop.stopPoints.map((nearBusStop)=>{
   return{
@@ -82,13 +84,9 @@ const nearTwoBusStops = responseNearBusStop.stopPoints.map((nearBusStop)=>{
   }
 });
 
-console.log(nearTwoBusStops);
+//console.log(nearTwoBusStops);
 return nearTwoBusStops;
-} else {
-  console.log("No bus stops nearby.");
 }
-
-};
 
 export const getNext5Arrivals_PCode = async (postCode) =>{
 const nearTwoBusStops = await getNearestStops (postCode);
